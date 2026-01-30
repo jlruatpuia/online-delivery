@@ -47,4 +47,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isDeliveryBoy(): bool {
+        return $this->role === 'delivery_boy';
+    }
+
+    public function isActiveDeliveryBoy(): bool {
+        return $this->isDeliveryBoy() && $this->is_active;
+    }
+
+    /* Scope: only active delivery boys */
+    public function scopeActiveDeliveryBoys($query)
+    {
+        return $query->where('role', 'delivery_boy')
+            ->where('is_active', true);
+    }
+
+    public function deliveries()
+    {
+        return $this->hasMany(Delivery::class, 'deliveryboy_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'deliveryboy_id');
+    }
 }
