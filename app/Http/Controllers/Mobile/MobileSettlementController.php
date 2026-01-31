@@ -69,7 +69,6 @@ class MobileSettlementController extends Controller
         }
 
         $amount = Payment::where('deliveryboy_id', $userId)
-            ->where('status', 'verified')
             ->whereBetween('created_at', [
                 $request->from_date.' 00:00:00',
                 $request->to_date.' 23:59:59'

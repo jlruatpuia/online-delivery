@@ -12,8 +12,7 @@ class Payment extends Model
         'amount',
         'payment_type',
         'payment_method',
-        'upi_ref_no',
-        'status',
+        'upi_ref_no'
     ];
 
     public function delivery()

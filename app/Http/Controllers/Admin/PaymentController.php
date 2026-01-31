@@ -40,42 +40,5 @@ class PaymentController extends Controller
     /**
      * Verify a payment
      */
-    public function verify(Payment $payment)
-    {
-        if ($payment->status !== 'pending') {
-            return back()->with('error', 'This payment is already processed.');
-        }
 
-        $payment->update([
-            'status' => 'verified',
-        ]);
-
-        // Notify delivery boy
-        $payment->deliveryBoy->notify(
-            new SettlementStatusNotification($payment, 'verified')
-        );
-
-        return back()->with('success', 'Payment verified successfully.');
-    }
-
-    /**
-     * Reject a payment
-     */
-    public function reject(Request $request, Payment $payment)
-    {
-        if ($payment->status !== 'pending') {
-            return back()->with('error', 'This payment is already processed.');
-        }
-
-        $payment->update([
-            'status' => 'rejected',
-        ]);
-
-        // Notify delivery boy
-        $payment->deliveryBoy->notify(
-            new SettlementStatusNotification($payment, 'rejected')
-        );
-
-        return back()->with('success', 'Payment rejected.');
-    }
 }

@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 
 class MobileDeliveryController extends Controller
 {
+    private function guard(Delivery $delivery)
+    {
+        if ($delivery->deliveryboy_id !== auth()->id()) {
+            return redirect()
+                ->route('mobile.deliveries')
+                ->with('error', 'This delivery is not assigned to you.');
+        }
+        return null;
+    }
     public function index()
     {
         $userId = auth()->id();
@@ -27,10 +36,13 @@ class MobileDeliveryController extends Controller
     public function show(Delivery $delivery)
     {
         // Security: only assigned delivery boy can view
-        abort_if(
-            $delivery->deliveryboy_id !== auth()->id(),
-            403
-        );
+//        abort_if(
+//            $delivery->deliveryboy_id !== auth()->id(),
+//            403
+//        );
+        if($response = $this->guard($delivery)) {
+            return $response;
+        }
 
         $delivery->load('customer');
 

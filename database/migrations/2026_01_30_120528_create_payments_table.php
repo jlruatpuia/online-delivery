@@ -38,7 +38,7 @@ return new class extends Migration
                 'pending',
                 'verified',
                 'rejected'
-            ])->default('pending');
+            ])->default('verified');
             $table->timestamps();
         });
     }

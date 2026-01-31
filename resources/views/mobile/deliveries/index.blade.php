@@ -1,25 +1,172 @@
+resources/views/mobile/deliveries/index.blade.php
 @extends('mobile.layout')
 
+@section('title', 'My Deliveries')
+
 @section('content')
-
-    <ul class="nav nav-tabs mb-3">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#pending">Pending</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#completed">Completed</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#cancelled">Cancelled</a></li>
-    </ul>
-
-    <div class="tab-content">
-        @foreach(['pending','completed','cancelled'] as $tab)
-            <div class="tab-pane fade {{ $tab=='pending'?'show active':'' }}" id="{{ $tab }}">
-                @foreach($$tab as $delivery)
-                    <a href="{{ route('mobile.delivery.show', $delivery) }}"
-                       class="card mb-2 p-2 text-decoration-none text-dark">
-                        <strong>#{{ $delivery->invoice_no }}</strong>
-                        <div class="small text-muted">₹ {{ $delivery->amount }}</div>
+    <div class="card mt-5">
+        <div class="card-header">
+            <ul class="nav nav-pills card-header-pills mb-3">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#pending">
+                        Pending ({{ $pending->count() }})
                     </a>
-                @endforeach
-            </div>
-        @endforeach
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#completed">
+                        Completed ({{ $completed->count() }})
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#cancelled">
+                        Cancelled ({{ $cancelled->count() }})
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="pending">
+                    <div class="tab-pane fade show active" id="pending">
+                        @forelse($pending as $delivery)
+                            @include('mobile.deliveries._card', ['delivery' => $delivery])
+                        @empty
+                            <div class="text-center text-muted">
+                                No pending deliveries
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="completed">
+
+                    @forelse($completed as $delivery)
+                        @include('mobile.deliveries._card', ['delivery' => $delivery])
+                    @empty
+                        <div class="text-center text-muted">
+                            No completed deliveries
+                        </div>
+                    @endforelse
+
+                </div>
+                <div class="tab-pane fade" id="cancelled">
+
+                    @forelse($cancelled as $delivery)
+                        @include('mobile.deliveries._card', ['delivery' => $delivery])
+                    @empty
+                        <div class="text-center text-muted">
+                            No cancelled deliveries
+                        </div>
+                    @endforelse
+
+                </div>
+            </div> {{-- tab-content --}}
+        </div>
     </div>
+
+
+
+
+    <!-- LONG PRESS ACTION SHEET -->
+    <div class="offcanvas offcanvas-bottom"
+         tabindex="-1"
+         id="deliveryActionSheet">
+        <div class="offcanvas-header">
+            <h6 class="fw-bold mb-0">Delivery Actions</h6>
+            <button class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <a id="actionCall" class="btn btn-outline-primary w-100 mb-2">
+                📞 Call Customer
+            </a>
+
+            <a id="actionNavigate" class="btn btn-outline-success w-100 mb-2">
+                📍 Navigate
+            </a>
+
+            <a id="actionOpen" class="btn btn-primary w-100">
+                📦 Open Delivery
+            </a>
+        </div>
+    </div>
+    <script>
+        let pressTimer;
+
+        function startPress(e, openUrl, phone, mapLocation) {
+            pressTimer = setTimeout(() => {
+
+                // Set actions
+                document.getElementById('actionOpen').href = openUrl;
+                document.getElementById('actionCall').href = 'tel:' + phone;
+
+                if (mapLocation) {
+                    document.getElementById('actionNavigate').href =
+                        'https://www.google.com/maps?q=' + mapLocation;
+                    document.getElementById('actionNavigate').classList.remove('disabled');
+                } else {
+                    document.getElementById('actionNavigate').href = '#';
+                    document.getElementById('actionNavigate').classList.add('disabled');
+                }
+
+                // Show bottom sheet
+                new bootstrap.Offcanvas(
+                    document.getElementById('deliveryActionSheet')
+                ).show();
+
+            }, 500); // 500ms = long press
+        }
+
+        function cancelPress() {
+            clearTimeout(pressTimer);
+        }
+    </script>
+    <script>
+        document.querySelectorAll('.swipe-container').forEach(container => {
+            const card = container.querySelector('.swipe-card');
+            let startX = 0;
+            let currentX = 0;
+            let isSwiping = false;
+
+            card.addEventListener('touchstart', e => {
+                startX = e.touches[0].clientX;
+                isSwiping = true;
+            });
+
+            card.addEventListener('touchmove', e => {
+                if (!isSwiping) return;
+
+                currentX = e.touches[0].clientX - startX;
+
+                // limit swipe distance
+                if (Math.abs(currentX) > 100) return;
+
+                card.style.transform = `translateX(${currentX}px)`;
+            });
+
+            card.addEventListener('touchend', () => {
+                isSwiping = false;
+
+                // 👉 Swipe Right → Call
+                if (currentX > 60) {
+                    window.location.href = container.dataset.call;
+                }
+
+                // 👉 Swipe Left → Navigate
+                else if (currentX < -60) {
+                    if (container.dataset.map) {
+                        window.open(
+                            'https://www.google.com/maps?q=' +
+                            container.dataset.map,
+                            '_blank'
+                        );
+                    }
+                }
+
+                // reset
+                card.style.transform = 'translateX(0)';
+                currentX = 0;
+            });
+        });
+    </script>
 
 @endsection

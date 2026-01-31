@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Mobile;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\Payment;
+use App\Models\User;
 use App\Notifications\DeliveryRequestNotification;
 use Illuminate\Http\Request;
 
@@ -38,8 +39,7 @@ class MobileDeliveryActionController extends Controller
             'delivery_id' => $delivery->id,
             'deliveryboy_id' => auth()->id(),
             'amount' => $delivery->amount,
-            'payment_type' => 'prepaid',
-            'status' => 'verified', // prepaid auto-verified
+            'payment_type' => 'prepaid' // prepaid auto-verified
         ]);
 
         $delivery->update(['status' => 'delivered']);
@@ -56,7 +56,7 @@ class MobileDeliveryActionController extends Controller
 
         $request->validate([
             'payment_method' => 'required|in:cash,upi',
-            'upi_ref_no' => 'required_if:payment_method,upi',
+
         ]);
 
         Payment::create([
@@ -65,8 +65,7 @@ class MobileDeliveryActionController extends Controller
             'amount' => $delivery->amount,
             'payment_type' => 'cod',
             'payment_method' => $request->payment_method,
-            'upi_ref_no' => $request->upi_ref_no,
-            'status' => 'pending', // admin verification
+            'upi_ref_no' => $request->upi_ref_no
         ]);
 
         $delivery->update(['status' => 'delivered']);

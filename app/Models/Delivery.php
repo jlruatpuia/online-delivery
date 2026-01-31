@@ -6,6 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Delivery extends Model
 {
+    protected $fillable = [
+        'invoice_no',
+        'sales_date',
+        'amount',
+        'payment_type',
+        'customer_id',
+        'deliveryboy_id',
+        'status'
+    ];
+
     public function deliveryBoy()
     {
         return $this->belongsTo(User::class, 'deliveryboy_id');

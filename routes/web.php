@@ -8,6 +8,7 @@ use App\Http\Controllers\Mobile\MobileDashboardController;
 use App\Http\Controllers\Mobile\MobileDeliveryActionController;
 use App\Http\Controllers\Mobile\MobileDeliveryController;
 use App\Http\Controllers\Mobile\MobilePaymentController;
+use App\Http\Controllers\Mobile\MobileProfileController;
 use App\Http\Controllers\Mobile\MobileScanController;
 use App\Http\Controllers\Mobile\MobileSettlementController;
 use App\Http\Controllers\ProfileController;
@@ -114,9 +115,17 @@ Route::middleware(['auth', 'role:delivery_boy'])
         )->name('settlement.store');
 
         /* 👤 Profile */
-        Route::get('/profile', function () {
-            return view('mobile.profile');
-        })->name('profile');
+        Route::get('/profile',
+            [MobileProfileController::class, 'edit']
+        )->name('profile');
+
+        Route::post('/profile/username',
+            [MobileProfileController::class, 'updateUsername']
+        )->name('profile.username');
+
+        Route::post('/profile/password',
+            [MobileProfileController::class, 'updatePassword']
+        )->name('profile.password');
 
         Route::get('/payments',
             [MobilePaymentController::class, 'index']

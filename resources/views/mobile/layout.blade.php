@@ -26,6 +26,42 @@
         .nav-icon {
             font-size: 1.4rem;
         }
+        .swipe-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .swipe-card {
+            position: relative;
+            z-index: 2;
+            transition: transform 0.25s ease;
+        }
+
+        .swipe-action {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            z-index: 1;
+        }
+
+        .swipe-left {
+            left: 0;
+            border-radius: 8px 0 0 8px;
+            background: #0d6efd; /* call - blue */
+        }
+
+        .swipe-right {
+            right: 0;
+            border-radius: 0 8px 8px 0;
+            background: #198754; /* navigate - green */
+        }
+
     </style>
 </head>
 <body>
@@ -74,7 +110,7 @@
     @endif
 </div>
 <!-- PAGE CONTENT -->
-<div class="container mt-5 pt-4">
+<div class="container ">
     @yield('content')
 </div>
 
