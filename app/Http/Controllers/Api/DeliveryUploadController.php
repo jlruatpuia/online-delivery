@@ -26,7 +26,7 @@ class DeliveryUploadController extends Controller
             Delivery::updateOrCreate(
                 ['invoice_no' => $data['invoice_no']],
                 [
-                    'local_id' => $data['local_id'],
+                    'sales_date' => $data['sales_date'],
                     'customer_id' => $customer->id,
                     'amount' => $data['amount'],
                     'payment_type' => $data['payment_type'],
@@ -37,7 +37,10 @@ class DeliveryUploadController extends Controller
         }
 
         return response()->json([
-            'message' => 'Deliveries uploaded successfully'
+            'success' => true,
+            'data' => [
+                'message' => 'Deliveries uploaded successfully'
+                ]
         ]);
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeliveryBoyController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\SettlementController;
+use App\Http\Controllers\Mobile\MobileAuthController;
 use App\Http\Controllers\Mobile\MobileDashboardController;
 use App\Http\Controllers\Mobile\MobileDeliveryActionController;
 use App\Http\Controllers\Mobile\MobileDeliveryController;
@@ -71,11 +72,23 @@ Route::middleware(['auth', 'role:admin'])
 //            [PaymentController::class, 'reject']
 //        )->name('payments.reject');
     });
+Route::prefix('mobile')->name('mobile.')->group(function () {
+
+    // Guest (not logged in)
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [MobileAuthController::class, 'showLogin'])
+            ->name('login');
+
+        Route::post('/login', [MobileAuthController::class, 'login'])
+            ->name('login.submit');
+    });
+});
 Route::middleware(['auth', 'role:delivery_boy'])
     ->prefix('mobile')
     ->name('mobile.')
     ->group(function () {
-
+        Route::post('/logout', [MobileAuthController::class, 'logout'])
+            ->name('logout');
         /* 🏠 Dashboard */
         Route::get('/dashboard',
             [MobileDashboardController::class, 'index']

@@ -14,11 +14,10 @@
             'cancel_requested' => ['danger-subtle', 'Cancel Requested'],
         ];
 
-        [$color, $label] = $statusMap[$delivery->status]
-            ?? ['dark', ucfirst($delivery->status)];
-        $hasMap = !empty($delivery->customer->map_location);
+        [$color, $label] = $statusMap[$delivery['status']]
+            ?? ['dark', ucfirst($delivery['status'])];
+        $hasMap = !empty($delivery['has_map_location']);
     @endphp
-    <div class="mt-5 pt-4">
     <!-- INVOICE & AMOUNT -->
     <div class="card shadow-sm mb-3 bg-{{ $color }}">
         <div class="card-header">{{ $label }}</div>
@@ -26,12 +25,12 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <div class="text-muted small">Invoice No</div>
-                    <h6 class="mb-0">#{{ $delivery->invoice_no }}</h6>
+                    <h6 class="mb-0">#{{ $delivery['invoice_no'] }}</h6>
                 </div>
                 <div class="text-end">
                     <div class="text-muted small">Amount</div>
                     <h6 class="mb-0 text-success">
-                        ₹ {{ number_format($delivery->amount, 2) }}
+                        ₹ {{ number_format($delivery['amount'], 2) }}
                     </h6>
                 </div>
             </div>
@@ -44,33 +43,33 @@
         <div class="card-body">
             <div class="mb-2">
                 <i class="bi bi-person me-2"></i>
-                {{ $delivery->customer->name }}
+                {{ $delivery['customer']['name'] }}
             </div>
 
             <div class="mb-2">
                 <i class="bi bi-telephone me-2"></i>
-                <a href="tel:{{ $delivery->customer->phone_no }}"
+                <a href="tel:{{ $delivery['customer']['phone'] }}"
                    class="text-decoration-none">
-                    {{ $delivery->customer->phone_no }}
+                    {{ $delivery['customer']['phone'] }}
                 </a>
             </div>
 
             <div class="mb-3">
                 <i class="bi bi-geo-alt me-2"></i>
-                {{ $delivery->customer->address }}
+                {{ $delivery['customer']['address'] }}
             </div>
 
 
         </div>
         <div class="card-footer d-flex justify-content-between">
             <!-- ACTION BUTTONS -->
-                <a href="tel:{{ $delivery->customer->phone_no }}"
+                <a href="tel:{{ $delivery['customer']['phone'] }}"
                    class="btn btn-outline-primary">
                     📞 Call Customer
                 </a>
 
             @if($hasMap)
-                <a href="https://www.google.com/maps?q={{ $delivery->customer->map_location }}"
+                <a href="{{ $delivery['navigation_url'] }}"
                    target="_blank"
                    class="btn btn-primary">
                     📍 Navigate
@@ -84,13 +83,13 @@
     </div>
 
     <!-- ACTION SECTION -->
-    @if(in_array($delivery->status, ['pending','assigned']))
+    @if(in_array($delivery['status'], ['pending','assigned']))
 
         {{-- ✅ PREPAID DELIVERY --}}
-        @if($delivery->payment_type === 'prepaid')
+        @if($delivery['payment_type'] === 'prepaid')
 
             <form method="POST"
-                  action="{{ route('mobile.delivery.confirm.prepaid', $delivery) }}">
+                  action="{{ route('mobile.delivery.confirm.prepaid', $delivery['id']) }}">
                 @csrf
 
                 <button class="btn btn-success w-100">
@@ -102,7 +101,7 @@
         @else
 
             <form method="POST"
-                  action="{{ route('mobile.delivery.collect.cod', $delivery) }}">
+                  action="{{ route('mobile.delivery.collect.cod', $delivery['id']) }}">
                 @csrf
 
                 <h6 class="fw-bold mb-2">Collect Payment</h6>
@@ -123,7 +122,7 @@
                 <div id="upiBox" style="display:none">
 
                     <div class="text-center mb-2">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=merchant@upi&am={{ $delivery->amount }}"
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=merchant@upi&am={{ $delivery['amount'] }}"
                              class="img-fluid">
                     </div>
 
@@ -134,7 +133,7 @@
                 </div>
 
                 <button class="btn btn-primary w-100">
-                    💰 Submit Payment (₹ {{ number_format($delivery->amount, 2) }})
+                    💰 Submit Payment (₹ {{ number_format($delivery['amount'], 2) }})
                 </button>
 
             </form>
@@ -144,7 +143,7 @@
     @else
         <div class="alert alert-info text-center">
             This delivery is already
-            <strong>{{ ucfirst($delivery->status) }}</strong>.
+            <strong>{{ ucfirst($delivery['status']) }}</strong>.
         </div>
     @endif
 
@@ -158,7 +157,7 @@
 
         <div class="offcanvas-body">
             <form method="POST"
-                  action="{{ route('mobile.delivery.request', $delivery) }}">
+                  action="{{ route('mobile.delivery.request', $delivery['id']) }}">
                 @csrf
 
                 <select name="type" class="form-select mb-2" required>
@@ -185,5 +184,5 @@
                 method === 'upi' ? 'block' : 'none';
         }
     </script>
-    </div>
+
 @endsection

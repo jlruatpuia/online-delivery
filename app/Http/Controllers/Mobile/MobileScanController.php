@@ -45,11 +45,11 @@ class MobileScanController extends Controller
                 ->with('error', 'This delivery is not assigned to you.');
         }
 
-        if (! in_array($delivery->status, ['pending', 'assigned'])) {
-            return redirect()
-                ->route('mobile.scan')
-                ->with('error', 'This delivery is already completed.');
-        }
+//        if (! in_array($delivery->status, ['pending', 'assigned'])) {
+//            return redirect()
+//                ->route('mobile.scan')
+//                ->with('error', 'This delivery is already completed.');
+//        }
 
         return redirect()
             ->route('mobile.delivery.show', $delivery)

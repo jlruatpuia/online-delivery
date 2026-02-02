@@ -3,7 +3,6 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="mt-5 pt-4">
     <!-- WELCOME -->
     <div class="mb-3">
         <h5 class="fw-bold mb-0">
@@ -95,7 +94,7 @@
             </div>
         </div>
     </div>
-</div>
+
     <script>
         setInterval(() => {
             fetch("{{ route('mobile.dashboard') }}", {

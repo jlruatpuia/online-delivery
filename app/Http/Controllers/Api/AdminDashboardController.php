@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\Settlement;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -22,11 +23,14 @@ class AdminDashboardController extends Controller
             : now();
 
         return response()->json([
-            'kpi' => $this->kpi($from, $to),
-            'daily_chart' => $this->dailyChart($from, $to),
-            'monthly_chart' => $this->monthlyChart(),
-            'delivery_status_chart' => $this->deliveryStatusChart($from, $to),
-            'payment_method_chart' => $this->paymentMethodChart($from, $to),
+            'success' => true,
+            'data' => [
+                'kpi' => $this->kpi($from, $to),
+                'daily_chart' => $this->dailyChart($from, $to),
+                'monthly_chart' => $this->monthlyChart(),
+                'delivery_status_chart' => $this->deliveryStatusChart($from, $to),
+                'payment_method_chart' => $this->paymentMethodChart($from, $to),
+            ]
         ]);
     }
 

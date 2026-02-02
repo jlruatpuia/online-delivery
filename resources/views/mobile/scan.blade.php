@@ -3,7 +3,6 @@
 @section('title', 'Scan Invoice')
 
 @section('content')
-<div class="mt-5 pt-4">
     <div class="card mb-3">
         <h6 class="card-header">Scan Invoice QR / Barcode</h6>
         <div class="card-body">
@@ -23,11 +22,12 @@
     </div>
     <div class="card">
         <form method="POST" action="{{ route('mobile.scan.handle') }}">
+            @csrf
             <div class="card-header text-center">Or enter invoice number manually</div>
             <div class="card-body">
                 <div class="input-group mb-3">
                     <input type="text"
-                           name="invoice_no"
+                           name="scan_result"
                            id="invoiceInput"
                            class="form-control"
                            placeholder="e.g. INV-102345"
@@ -85,5 +85,5 @@
             }
         );
     </script>
-</div>
+
 @endsection

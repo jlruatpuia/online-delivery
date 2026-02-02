@@ -41,12 +41,15 @@ class AdminAuthController extends Controller
         );
 
         return response()->json([
-            'token' => $token->plainTextToken,
-            'expires_at' => $expiresAt->toDateTimeString(),
-            'remember_me' => $remember,
-            'admin' => [
-                'id' => $admin->id,
-                'name' => $admin->name,
+            'success' => true,
+            'data' => [
+                'token' => $token->plainTextToken,
+                'expires_at' => $expiresAt->toDateTimeString(),
+                'remember_me' => $remember,
+                'admin' => [
+                    'id' => $admin->id,
+                    'name' => $admin->name,
+                ]
             ]
         ]);
     }
@@ -55,23 +58,18 @@ class AdminAuthController extends Controller
     {
         $user = $request->user();
 
-        if (! $user->is_active) {
-            $user->currentAccessToken()->delete();
-
-            return response()->json([
-                'message' => 'Account is inactive'
-            ], 403);
-        }
-
         return response()->json([
-            'id' => $user->id,
-            'name' => $user->name,
-            'username' => $user->username,
-            'role' => $user->role,
-            'is_active' => $user->is_active,
-            'token_expires_at' => optional(
-                $user->currentAccessToken()
-            )->expires_at,
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'role' => $user->role,
+                'is_active' => $user->is_active,
+                'token_expires_at' => optional(
+                    $user->currentAccessToken()
+                )->expires_at,
+            ]
         ]);
     }
 }

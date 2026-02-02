@@ -14,6 +14,10 @@ class Customer extends Model
         'local_id'
     ];
 
+    protected $casts = [
+        'map_location' => 'array',
+    ];
+
     public function deliveries() {
         return $this->hasMany(Delivery::class);
     }

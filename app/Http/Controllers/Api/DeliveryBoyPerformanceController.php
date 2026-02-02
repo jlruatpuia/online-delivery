@@ -20,9 +20,12 @@ class DeliveryBoyPerformanceController extends Controller
             : now();
 
         return response()->json([
-            'deliveries_chart' => $this->deliveriesChart($from, $to),
-            'collection_chart' => $this->collectionChart($from, $to),
-            'success_rate_chart' => $this->successRateChart($from, $to),
+            'success' => true,
+            'data' => [
+                'deliveries_chart' => $this->deliveriesChart($from, $to),
+                'collection_chart' => $this->collectionChart($from, $to),
+                'success_rate_chart' => $this->successRateChart($from, $to),
+                ]
         ]);
     }
 

@@ -3,7 +3,6 @@
 @section('title', 'My Profile')
 
 @section('content')
-<div class="mt-5 pt-4">
     <h6 class="fw-bold mb-3">My Profile</h6>
 
     <!-- BASIC INFO -->
@@ -76,11 +75,11 @@
     </div>
 
     <!-- LOGOUT -->
-    <form method="POST" action="{{ route('logout') }}">
+    <form method="POST" action="{{ route('mobile.logout') }}">
         @csrf
         <button class="btn btn-outline-danger w-100">
             Logout
         </button>
     </form>
-</div>
+
 @endsection

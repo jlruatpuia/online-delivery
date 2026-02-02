@@ -9,9 +9,11 @@ class Delivery extends Model
     protected $fillable = [
         'invoice_no',
         'sales_date',
+        'delivery_date',
         'amount',
         'payment_type',
         'customer_id',
+        'customer_local_id',
         'deliveryboy_id',
         'status'
     ];

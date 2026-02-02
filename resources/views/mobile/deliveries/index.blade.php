@@ -1,10 +1,9 @@
-resources/views/mobile/deliveries/index.blade.php
 @extends('mobile.layout')
 
 @section('title', 'My Deliveries')
 
 @section('content')
-    <div class="card mt-5">
+    <div class="card">
         <div class="card-header">
             <ul class="nav nav-pills card-header-pills mb-3">
                 <li class="nav-item">
@@ -100,8 +99,7 @@ resources/views/mobile/deliveries/index.blade.php
                 document.getElementById('actionCall').href = 'tel:' + phone;
 
                 if (mapLocation) {
-                    document.getElementById('actionNavigate').href =
-                        'https://www.google.com/maps?q=' + mapLocation;
+                    document.getElementById('actionNavigate').href ="{{ $delivery['navigation_url'] }}";
                     document.getElementById('actionNavigate').classList.remove('disabled');
                 } else {
                     document.getElementById('actionNavigate').href = '#';
@@ -113,7 +111,7 @@ resources/views/mobile/deliveries/index.blade.php
                     document.getElementById('deliveryActionSheet')
                 ).show();
 
-            }, 500); // 500ms = long press
+            }, 800); // 500ms = long press
         }
 
         function cancelPress() {
@@ -154,12 +152,11 @@ resources/views/mobile/deliveries/index.blade.php
                 // 👉 Swipe Left → Navigate
                 else if (currentX < -60) {
                     if (container.dataset.map) {
-                        window.open(
-                            'https://www.google.com/maps?q=' +
-                            container.dataset.map,
+                        window.open({{ $delivery['navigation_url'] }},
                             '_blank'
                         );
                     }
+
                 }
 
                 // reset

@@ -11,15 +11,45 @@ class CustomerSyncController extends Controller
 {
     public function sync(CustomerSyncRequest $request)
     {
-        foreach ($request->customers as $data) {
-            Customer::updateOrCreate(
-                ['local_id' => $data['local_id']],
-                $data
+        $request->validate([
+            'customers' => 'required|array'
+        ]);
+
+        $result = [];
+
+        foreach ($request->customers as $c) {
+            $customer = Customer::updateOrCreate(
+                [
+                    'local_id' => $c['local_id'] // UNIQUE FIELD
+                ],
+                [
+                    'phone_no' => $c['phone_no'],
+                    'name' => $c['name'],
+                    'address' => $c['address'],
+                    'map_location' => $c['map_location'],
+                    'updated_at' => $c['updated_at']
+                ]
             );
+
+            $result[] = [
+                'local_id' => $c['local_id'],
+                //'server_id' => $customer->id
+            ];
         }
 
         return response()->json([
-            'message' => 'Customers synced successfully'
+            'success' =>true,
+            'synced' => $result
         ]);
+//        foreach ($request->customers as $data) {
+//            Customer::updateOrCreate(
+//                ['local_id' => $data['local_id']],
+//                $data
+//            );
+//        }
+//
+//        return response()->json([
+//            'message' => 'Customers synced successfully'
+//        ]);
     }
 }

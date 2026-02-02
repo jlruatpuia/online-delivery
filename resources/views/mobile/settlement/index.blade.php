@@ -3,7 +3,6 @@
 @section('title', 'Settlement')
 
 @section('content')
-<div class="mt-5 pt-4">
     <div class="card shadow-sm">
         <div class="card-header">Settlement Submission</div>
         <div class="card-body">
@@ -65,8 +64,8 @@
         <div class="card-body d-flex justify-content-between">
             <div>
                 <div>
-                    {{ $settlement->from_date }}
-                    → {{ $settlement->to_date }}
+                    {{ \Carbon\Carbon::parse($settlement->from_date)->format('d-m-Y') }}
+                    → {{ \Carbon\Carbon::parse($settlement->to_date)->format('d-m-Y') }}
                 </div>
                 <small class="text-muted">
                     {{ ucfirst($settlement->status) }}
@@ -84,6 +83,6 @@
             </div>
         @endforelse
     </div>
-</div>
+
 
 @endsection

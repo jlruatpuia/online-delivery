@@ -67,10 +67,12 @@
 <body>
 
 <!-- TOP BAR -->
-<nav class="navbar bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-light bg-white shadow-sm sticky-top">
     <div class="container-fluid">
-        <span class="fw-bold">Delivery Dashboard</span>
-
+        <span class="fw-bold">
+            @yield('title')
+        </span>
+        @auth
         <!-- Notification Bell -->
         <button class="btn position-relative"
                 data-bs-toggle="offcanvas"
@@ -80,42 +82,59 @@
                 {{ auth()->user()->unreadNotifications->count() }}
             </span>
         </button>
+        @endauth
     </div>
 </nav>
-<div class="position-fixed top-0 start-50 translate-middle-x mt-2 z-3"
-     style="width:95%; max-width:420px;">
-
+<div class="container my-3">
     @if(session('success'))
-        <div class="toast align-items-center text-bg-success show mb-2">
-            <div class="d-flex">
-                <div class="toast-body">
-                    {{ session('success') }}
-                </div>
-                <button class="btn-close btn-close-white me-2"
-                        data-bs-dismiss="toast"></button>
-            </div>
+        <div class="alert alert-success py-2">
+            {{ session('success') }}
         </div>
     @endif
 
     @if(session('error'))
-        <div class="toast align-items-center text-bg-warning show mb-2">
-            <div class="d-flex">
-                <div class="toast-body">
-                    {{ session('error') }}
-                </div>
-                <button class="btn-close me-2"
-                        data-bs-dismiss="toast"></button>
-            </div>
+        <div class="alert alert-danger py-2">
+            {{ session('error') }}
         </div>
     @endif
-</div>
-<!-- PAGE CONTENT -->
-<div class="container ">
+
     @yield('content')
 </div>
+{{--<div class="position-fixed top-0 start-50 translate-middle-x mt-2 z-3"--}}
+{{--     style="width:95%; max-width:420px;">--}}
 
+{{--    @if(session('success'))--}}
+{{--        <div class="toast align-items-center text-bg-success show mb-2">--}}
+{{--            <div class="d-flex">--}}
+{{--                <div class="toast-body">--}}
+{{--                    {{ session('success') }}--}}
+{{--                </div>--}}
+{{--                <button class="btn-close btn-close-white me-2"--}}
+{{--                        data-bs-dismiss="toast"></button>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    @endif--}}
+
+{{--    @if(session('error'))--}}
+{{--        <div class="toast align-items-center text-bg-warning show mb-2">--}}
+{{--            <div class="d-flex">--}}
+{{--                <div class="toast-body">--}}
+{{--                    {{ session('error') }}--}}
+{{--                </div>--}}
+{{--                <button class="btn-close me-2"--}}
+{{--                        data-bs-dismiss="toast"></button>--}}
+{{--            </div>--}}
+{{--        </div>--}}
+{{--    @endif--}}
+{{--</div>--}}
+{{--<!-- PAGE CONTENT -->--}}
+{{--<div class="container ">--}}
+{{--    @yield('content')--}}
+{{--</div>--}}
+@auth
 @include('mobile.notifications')
 @include('mobile.partials.bottom-nav')
+@endauth
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <div id="offlineBanner"
