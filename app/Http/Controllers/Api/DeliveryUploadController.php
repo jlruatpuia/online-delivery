@@ -32,6 +32,7 @@ class DeliveryUploadController extends Controller
                     'payment_type' => $data['payment_type'],
                     'delivery_date' => $data['delivery_date'],
                     'status' => 'pending',
+                    'deliveryboy_id' => $data['deliveryboy_id']
                 ]
             );
         }

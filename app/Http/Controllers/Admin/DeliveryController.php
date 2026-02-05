@@ -5,54 +5,66 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\User;
+use App\Notifications\DeliveryRequestAcceptedNotification;
 use Illuminate\Http\Request;
 
 class DeliveryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        /* Overall statistics */
-        $stats = [
-            'total' => Delivery::count(),
-            'delivered' => Delivery::where('status', 'delivered')->count(),
-            'pending' => Delivery::whereIn('status', ['pending', 'assigned'])->count(),
-            'cancelled' => Delivery::where('status', 'cancelled')->count(),
-            'rescheduled' => Delivery::where('status', 'reschedule_requested')->count(),
-            'total_amount' => Delivery::where('status', 'delivered')->sum('amount'),
-        ];
+        $delivery_boys = User::where('role', 'delivery_boy')->where('is_active', true)->get();
+        $deliveries = collect();
 
-        /* Per delivery boy statistics */
-        $deliveryBoys = User::where('role', 'delivery_boy')
-            ->withCount([
-                'deliveries as total_deliveries',
-                'deliveries as delivered_count' => fn ($q) =>
-                $q->where('status', 'delivered'),
+        if($request->filled('date_range')){
+            $query = Delivery::with('deliveryBoy')
+                ->orderByDesc('delivery_date');
+            $range = $request->date_range;
+            if(str_contains($range, ' to ')){
+                [$from, $to] = explode(' to ', $request->date_range);
+            } else {
+                $from = $to = $range;
+            }
 
-                'deliveries as pending_count' => fn ($q) =>
-                $q->whereIn('status', ['pending', 'assigned']),
+            $query->whereBetween('delivery_date', [$from, $to]);
 
-                'deliveries as cancelled_count' => fn ($q) =>
-                $q->where('status', 'cancelled'),
+            if($request->filled('delivery_boy')){
+                $query->where('deliveryboy_id', $request->delivery_boy);
+            }
+            if($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+            $deliveries = $query->get();
+        }
 
-                'deliveries as rescheduled_count' => fn ($q) =>
-                $q->where('status', 'reschedule_requested'),
-            ])
-            ->withSum([
-                'deliveries as total_amount' => fn ($q) =>
-                $q->where('status', 'delivered')
-            ], 'amount')
-            ->get();
+        return view('admin.deliveries.index', compact('deliveries', 'delivery_boys'));
+    }
 
-        /* Latest deliveries (read-only list) */
-        $deliveries = Delivery::with('deliveryBoy')
-            ->latest()
-            ->limit(50)
-            ->get();
+    public function show(Delivery $delivery){
 
-        return view('admin.dashboard', compact(
-            'stats',
-            'deliveryBoys',
-            'deliveries'
-        ));
+        return view(
+            'admin.deliveries.show',
+            compact('delivery')
+        );
+    }
+
+    public function approve(Delivery $delivery) {
+        if ($delivery->status === 'cancel_requested') {
+            $delivery->update(['status' => 'cancelled']);
+        }
+
+        if ($delivery->status === 'reschedule_requested') {
+            $delivery->update([
+                'status' => 'pending',
+                'delivery_date' => $delivery->rescheduled_at,
+                'rescheduled_at' => null,
+            ]);
+        }
+
+        $delivery->deliveryBoy?->notify(
+            new DeliveryRequestAcceptedNotification($delivery)
+        );
+
+        return redirect()->route('admin.deliveries.show', $delivery)
+            ->with('success', 'Request approved');
     }
 }

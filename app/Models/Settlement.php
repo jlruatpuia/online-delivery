@@ -8,13 +8,17 @@ class Settlement extends Model
 {
     protected $fillable = [
         'deliveryboy_id',
-        'from_date',
-        'to_date',
+        'settlement_date',
+        'total_cash',
+        'total_upi',
         'total_amount',
         'status',
         'reject_reason'
     ];
 
+    protected $casts = [
+        'settlement_date' => 'date',
+    ];
     public function deliveryBoy()
     {
         return $this->belongsTo(User::class, 'deliveryboy_id');

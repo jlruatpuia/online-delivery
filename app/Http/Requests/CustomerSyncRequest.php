@@ -27,7 +27,7 @@ class CustomerSyncRequest extends FormRequest
             'customers.*.name' => 'required|string',
             'customers.*.phone_no' => 'nullable|string',
             'customers.*.address' => 'nullable|string',
-            'customers.*.map_location' => 'nullable|string',
+            'customers.*.map_location' => 'nullable|array',
         ];
     }
 }

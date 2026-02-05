@@ -15,7 +15,7 @@ class AdminDeliveryController extends Controller
         $query = Delivery::with(['deliveryBoy','customer']);
 
         if ($request->from_date && $request->to_date) {
-            $query->whereBetween('created_at', [
+            $query->whereBetween('delivery_date', [
                 $request->from_date,
                 $request->to_date
             ]);
@@ -30,6 +30,14 @@ class AdminDeliveryController extends Controller
         );
     }
 
+    public function get($id) {
+        $delivery = Delivery::findOrFail($id);
+        return response()->json([
+            'success' => true,
+            'data' => $delivery
+        ]);
+    }
+
     public function approveRequest(Delivery $delivery)
     {
         if ($delivery->status === 'cancel_requested') {
@@ -37,14 +45,21 @@ class AdminDeliveryController extends Controller
         }
 
         if ($delivery->status === 'reschedule_requested') {
-            $delivery->update(['status' => 'pending']);
+            $delivery->update([
+                'status' => 'pending',
+                'delivery_date' => $delivery->rescheduled_at,
+                'rescheduled_at' => null,
+            ]);
         }
 
         $delivery->deliveryBoy?->notify(
             new DeliveryRequestAcceptedNotification($delivery)
         );
 
-        return response()->json(['message' => 'Request approved']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Request approved'
+        ]);
     }
 
     public function rejectRequest(Request $request, Delivery $delivery)
@@ -62,6 +77,9 @@ class AdminDeliveryController extends Controller
             )
         );
 
-        return response()->json(['message' => 'Request rejected']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Request rejected'
+        ]);
     }
 }

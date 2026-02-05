@@ -15,7 +15,16 @@ class Delivery extends Model
         'customer_id',
         'customer_local_id',
         'deliveryboy_id',
-        'status'
+        'status',
+        'delivered_at',
+        'rescheduled_at'
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'delivery_date' => 'date',
+        'delivered_at' => 'datetime',
+        'rescheduled_at' => 'datetime'
     ];
 
     public function deliveryBoy()

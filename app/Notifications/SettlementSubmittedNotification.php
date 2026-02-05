@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,11 +24,12 @@ class SettlementSubmittedNotification extends Notification
 
     public function toArray($notifiable)
     {
+        $date = Carbon::parse($this->settlement->settlement_date)
+            ->format('d-m-Y');
         return [
             'title' => 'Settlement Submitted',
             'message' =>
-                "Settlement submitted by {$this->settlement->deliveryBoy->name}
-                 ({$this->settlement->from_date} → {$this->settlement->to_date})",
+                "Settlement submitted by {$this->settlement->deliveryBoy->name} ({$date})",
             'settlement_id' => $this->settlement->id,
         ];
     }

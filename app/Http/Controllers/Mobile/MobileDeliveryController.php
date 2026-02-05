@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Mobile;
 
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
+use App\Models\Upi;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MobileDeliveryController extends Controller
@@ -21,8 +23,10 @@ class MobileDeliveryController extends Controller
     {
         $userId = auth()->id();
 
+
         $deliveries = Delivery::with('customer')
             ->where('deliveryboy_id', $userId)
+            ->whereDate('delivery_date', Carbon::today())
             ->latest()
             ->get()
             ->map(function ($delivery) {
@@ -49,7 +53,7 @@ class MobileDeliveryController extends Controller
                    'status_color' => $delivery->status_color,
                    'payment_type' => $delivery->payment_type,
                    'delivery_datetime' => $delivery->delivery_datetime,
-                    'created_at' => $delivery->created_at,
+                    'delivered_at' => $delivery->delivered_at,
                    'customer' => [
                        'name' => $delivery->customer?->name,
                        'phone' => $delivery->customer?->phone_no,
@@ -69,32 +73,18 @@ class MobileDeliveryController extends Controller
         return view('mobile.deliveries.index', [
             'pending' => $deliveries->where('status', 'pending'),
             'completed' => $deliveries->where('status', 'delivered'),
-            'cancelled' => $deliveries->whereIn('status', ['cancelled']),
+            'cancelled' => $deliveries->whereIn('status', ['reschedule_requested', 'cencel_requested','cancelled']),
         ]);
-//        return view('mobile.deliveries.index', [
-//            'pending' => Delivery::where('deliveryboy_id', $userId)
-//                ->whereIn('status', ['pending','assigned'])->get(),
-//
-//            'completed' => Delivery::where('deliveryboy_id', $userId)
-//                ->where('status', 'delivered')->get(),
-//
-//            'cancelled' => Delivery::where('deliveryboy_id', $userId)
-//                ->whereIn('status', ['cancelled','reschedule_requested'])->get(),
-//        ]);
     }
 
     public function show(Delivery $delivery)
     {
-        // Security: only assigned delivery boy can view
-//        abort_if(
-//            $delivery->deliveryboy_id !== auth()->id(),
-//            403
-//        );
         if($response = $this->guard($delivery)) {
             return $response;
         }
         $mapLocation = $delivery->customer?->map_location;
         $navigationUrl = navigationUrlFromMap($mapLocation);
+        $upi = Upi::first();
 
         return view('mobile.deliveries.show', [
             'delivery' => [
@@ -103,6 +93,7 @@ class MobileDeliveryController extends Controller
                 'amount' => $delivery->amount,
                 'status' => $delivery->status,
                 'payment_type' => $delivery->payment_type,
+                'delivered_at' => $delivery->delivered_at,
 
                 'customer' => [
                     'name' => $delivery->customer?->name,
@@ -113,10 +104,9 @@ class MobileDeliveryController extends Controller
                 // 👇 MAP DATA
                 'has_map_location' => !empty($navigationUrl),
                 'navigation_url' => $navigationUrl,
+
+                'upi' => "upi://pay?pa=".$upi->upi_id."&pn=".$upi->payee_name."&am=".$delivery->amount."&tn=".$delivery->invoice_no."&cu=INR"
             ]
         ]);
-//        $delivery->load('customer');
-
-//        return view('mobile.deliveries.show', compact('delivery'));
     }
 }

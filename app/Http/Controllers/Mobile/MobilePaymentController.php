@@ -89,6 +89,7 @@ class MobilePaymentController extends Controller
 
         return redirect()
             ->route('mobile.dashboard')
+            ->with('payment_success', true)
             ->with('success', 'Payment submitted successfully.');
     }
 

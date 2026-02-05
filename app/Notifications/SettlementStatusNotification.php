@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +13,7 @@ class SettlementStatusNotification extends Notification
     use Queueable;
 
     public function __construct(
-        public $payment,
+        public $settlement,
         public string $status // verified | rejected
     ) {}
 
@@ -23,14 +24,6 @@ class SettlementStatusNotification extends Notification
 
     public function toArray($notifiable)
     {
-//        return [
-//            'title' => 'Settlement ' . ucfirst($this->status),
-//            'message' =>
-//                "Settlement ({$this->settlement->from_date}
-//                 → {$this->settlement->to_date}) was {$this->status}",
-//            'settlement_id' => $this->settlement->id,
-//            'status' => $this->status,
-//        ];
         return [
             'type' => 'settlement_status',
             'status' => $this->status,
@@ -42,8 +35,7 @@ class SettlementStatusNotification extends Notification
 
             'message' => $this->buildMessage(),
 
-            'from_date' => $this->settlement->from_date,
-            'to_date' => $this->settlement->to_date,
+            'settlement_date' => $this->settlement->settlement_date,
             'amount' => $this->settlement->total_amount,
             'reject_reason' => $this->settlement->reject_reason,
         ];
@@ -53,17 +45,15 @@ class SettlementStatusNotification extends Notification
     {
         if ($this->status === 'approved') {
             return sprintf(
-                'Your settlement from %s to %s for ₹%s has been approved.',
-                $this->settlement->from_date,
-                $this->settlement->to_date,
-                number_format($this->settlement->total_amount, 2)
+                'Your settlement of ₹%s on %s has been approved.',
+                number_format($this->settlement->total_amount, 2),
+                Carbon::parse($this->settlement->settlement_date)->format('d-m-Y')
             );
         }
 
         return sprintf(
-            'Your settlement from %s to %s was rejected. Reason: %s',
-            $this->settlement->from_date,
-            $this->settlement->to_date,
+            'Your settlement on %s was rejected. Reason: %s',
+            $this->settlement->settlement_date,
             $this->settlement->reject_reason ?? 'Not specified'
         );
     }

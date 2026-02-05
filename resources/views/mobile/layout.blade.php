@@ -31,38 +31,42 @@
             overflow: hidden;
         }
 
-        .swipe-card {
-            position: relative;
-            z-index: 2;
-            transition: transform 0.25s ease;
-        }
-
-        .swipe-action {
+        .swipe-bg {
             position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 80px;
+            inset: 0;
+            background: #d1e7dd;
+            color: #0f5132;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            z-index: 1;
+            padding-left: 16px;
+            font-weight: 600;
         }
 
-        .swipe-left {
-            left: 0;
-            border-radius: 8px 0 0 8px;
-            background: #0d6efd; /* call - blue */
+        .swipe-card {
+            position: relative;
+            background: #fff;
+            transition: transform 0.2s ease;
         }
 
-        .swipe-right {
-            right: 0;
-            border-radius: 0 8px 8px 0;
-            background: #198754; /* navigate - green */
+        .off-canvas-form-content{
+            padding-bottom: 120px;
         }
 
+        .offcanvas-footer{
+            position: sticky;
+            bottom: 0;
+            background: #fff;
+            padding: 12px;
+            padding-bottom: 70px;
+            border-top: 1px solid #eee;
+        }
+        /*.delivery-request-form {*/
+        /*    !*position: sticky;*!*/
+        /*    !*bottom: 0;*!*/
+        /*    padding-bottom: 100px;*/
+        /*}*/
     </style>
+    @yield('styles')
 </head>
 <body>
 
@@ -78,7 +82,7 @@
                 data-bs-toggle="offcanvas"
                 data-bs-target="#notificationCanvas">
             <i class="bi bi-bell fs-4"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                 {{ auth()->user()->unreadNotifications->count() }}
             </span>
         </button>
@@ -152,6 +156,126 @@
     window.addEventListener('online', updateConnectionStatus);
     window.addEventListener('offline', updateConnectionStatus);
     updateConnectionStatus();
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        document.querySelectorAll('.swipe-container')
+            .forEach(container => {
+
+                const card = container.querySelector('.swipe-card');
+                let startX = 0, currentX = 0, swiping = false;
+
+                card.addEventListener('touchstart', e => {
+                    startX = e.touches[0].clientX;
+                    swiping = true;
+                });
+
+                card.addEventListener('touchmove', e => {
+                    if (!swiping) return;
+
+                    currentX = e.touches[0].clientX - startX;
+                    if (currentX < 0) return;
+
+                    card.style.transform =
+                        `translateX(${currentX}px)`;
+                });
+
+                card.addEventListener('touchend', () => {
+                    swiping = false;
+
+                    if (currentX > 80) {
+                        markRead(container.dataset.id, container);
+                    } else {
+                        card.style.transform = 'translateX(0)';
+                    }
+                    currentX = 0;
+                });
+            });
+
+        // 🔘 Mark all as read
+        document.getElementById('markAllRead')
+            ?.addEventListener('click', () => {
+
+                fetch('/mobile/notifications/read-all', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                }).then(() => {
+                    document.querySelectorAll('.swipe-container')
+                        .forEach(item => {
+                            item.style.transition = 'opacity 0.2s ease';
+                            item.style.opacity = '0';
+                            setTimeout(() => item.remove(), 200);
+                        });
+
+                    updateNotificationBadge(0);
+                    checkEmptyNotificationList();
+                    // document
+                    //     .querySelectorAll('.swipe-card')
+                    //     .forEach(card => card.classList.remove('fw-bold'));
+                    //
+                    // updateNotificationBadge(0);
+                });
+            });
+    });
+
+    function markRead(id, container) {
+        fetch(`/mobile/notifications/${id}/read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        }).then(() => {
+            container.style.transition = 'opacity 0.2s ease';
+            container.style.opacity = '0';
+
+            setTimeout(() => {
+                container.remove();
+                decrementNotificationBadge(0);
+                checkEmptyNotificationList();
+                }, 200
+            );
+            // const card = container.querySelector('.swipe-card');
+            // card.classList.remove('fw-bold');
+            // card.style.transform = 'translateX(0)';
+            //
+            // decrementNotificationBadge();
+        });
+    }
+</script>
+<script>
+    function decrementNotificationBadge() {
+        const badge = document.getElementById('notifBadge');
+        if (!badge) return;
+
+        let count = parseInt(badge.innerText || '0');
+        count = Math.max(count - 1, 0);
+
+        badge.innerText = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+
+    function updateNotificationBadge(count) {
+        const badge = document.getElementById('notifBadge');
+        if (!badge) return;
+
+        badge.innerText = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+
+    function checkEmptyNotificationList() {
+        const list = document.getElementById('notificationList');
+
+        if (!list || list.children.length > 0) return;
+
+        list.innerHTML = `
+        <p class="text-muted text-center mt-3">
+            No notifications
+        </p>
+    `;
+    }
 </script>
 </body>
 </html>

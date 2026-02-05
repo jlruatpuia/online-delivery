@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\CheckSettlementSubmission;
 use App\Http\Middleware\CheckActiveUser;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\RedirectMobileDevice;
@@ -17,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    ->withCommands([
+        CheckSettlementSubmission::class
+    ])
     ->withMiddleware(function ($middleware) {
         $middleware->alias([
             'role' => RoleMiddleware::class,

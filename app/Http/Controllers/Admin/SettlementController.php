@@ -4,18 +4,47 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Settlement;
+use App\Models\User;
 use App\Notifications\SettlementStatusNotification;
 use Illuminate\Http\Request;
 
 class SettlementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $settlements = Settlement::with('deliveryBoy')
-            ->latest()
-            ->get();
+        $query = Settlement::with('deliveryBoy')
+            ->orderByDesc('settlement_date');
 
-        return view('admin.settlements.index', compact('settlements'));
+        if($request->filled('date_range')){
+            $range = $request->date_range;
+            if(str_contains($range, ' to ')){
+                [$from, $to] = explode(' to ', $request->date_range);
+            } else {
+                $from = $to = $range;
+            }
+
+            $query->whereBetween('settlement_date', [$from, $to]);
+        }
+        if($request->filled('delivery_boy')){
+            $query->where('deliveryboy_id', $request->delivery_boy);
+        }
+        if($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $settlements = $query->get();
+
+        $delivery_boys = User::where('role', 'delivery_boy')->where('is_active', true)->get();
+
+        return view('admin.settlements.index', compact('settlements', 'delivery_boys'));
+    }
+
+    public function show(Settlement $settlement)
+    {
+        return view(
+            'admin.settlements.show',
+            compact('settlement')
+        );
     }
 
     public function approve(Settlement $settlement)

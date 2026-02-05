@@ -41,9 +41,12 @@ class MobileDeliveryActionController extends Controller
             'amount' => $delivery->amount,
             'payment_type' => 'prepaid' // prepaid auto-verified
         ]);
-
-        $delivery->update(['status' => 'delivered']);
-
+        //dd($delivery);
+        $delivery->update([
+            'status' => 'delivered',
+            'delivered_at' => now()
+        ]);
+        //dd($delivery);
         return back()->with('success', 'Delivery completed');
     }
 
@@ -68,7 +71,10 @@ class MobileDeliveryActionController extends Controller
             'upi_ref_no' => $request->upi_ref_no
         ]);
 
-        $delivery->update(['status' => 'delivered']);
+        $delivery->update([
+            'status' => 'delivered',
+            'delivered_at' => now()
+        ]);
 
         return back()->with('success', 'Payment submitted');
     }
@@ -79,7 +85,7 @@ class MobileDeliveryActionController extends Controller
         if($response = $this->guard($delivery)) {
             return $response;
         }
-
+        //dd($request, $delivery);
         $request->validate([
             'type' => 'required|in:reschedule,cancel',
             'reason' => 'required|string|max:255',
@@ -89,6 +95,9 @@ class MobileDeliveryActionController extends Controller
             'status' => $request->type === 'cancel'
                 ? 'cancel_requested'
                 : 'reschedule_requested',
+            'rescheduled_at' => $request->type === 'cancel'
+                ? null
+                : $request->reschedule_date
         ]);
 
         // notify admin here (optional)

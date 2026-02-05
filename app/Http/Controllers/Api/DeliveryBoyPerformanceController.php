@@ -39,7 +39,7 @@ class DeliveryBoyPerformanceController extends Controller
                 COUNT(*) as total_deliveries,
                 SUM(status = 'delivered') as delivered
             ")
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('delivery_date', [$from, $to])
             ->groupBy('deliveryboy_id')
             ->with('deliveryBoy:id,name')
             ->get();
@@ -76,7 +76,7 @@ class DeliveryBoyPerformanceController extends Controller
                     2
                 ) as success_rate
             ")
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('delivery_date', [$from, $to])
             ->groupBy('deliveryboy_id')
             ->with('deliveryBoy:id,name')
             ->get();

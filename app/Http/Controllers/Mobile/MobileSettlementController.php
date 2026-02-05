@@ -15,24 +15,29 @@ class MobileSettlementController extends Controller
     {
         $userId = auth()->id();
 
-        $from = $request->input('from_date');
-        $to = $request->input('to_date');
+        $settlement_date = $request->input('settlement_date') ?? now()->toDateString();
 
+        $totalPrepaid = 0;
+        $totalUpi = 0;
+        $totalCash = 0;
         $totalAmount = 0;
+        $netPayable = 0;
         $alreadySubmitted = false;
 
-        if ($from && $to) {
-            $totalAmount = Payment::where('deliveryboy_id', $userId)
-                ->where('status', 'verified')
-                ->whereBetween('created_at', [
-                    $from . ' 00:00:00',
-                    $to . ' 23:59:59'
-                ])
-                ->sum('amount');
+        if ($settlement_date) {
+
+            $payments = Payment::where('deliveryboy_id', $userId)
+                ->whereDate('created_at', $settlement_date)
+                ->get();
+
+            $totalCash = $payments->where('payment_method', 'cash')->sum('amount');
+            $totalUpi = $payments->where('payment_method', 'upi')->sum('amount');
+            $totalPrepaid = $payments->where('payment_method', null)->sum('amount');
+
+            $netPayable = $totalCash + $totalUpi;
 
             $alreadySubmitted = Settlement::where('deliveryboy_id', $userId)
-                ->where('from_date', $from)
-                ->where('to_date', $to)
+                ->where('settlement_date', $settlement_date)
                 ->exists();
         }
 
@@ -42,9 +47,12 @@ class MobileSettlementController extends Controller
             ->get();
 
         return view('mobile.settlement.index', compact(
-            'from',
-            'to',
+            'settlement_date',
+            'totalPrepaid',
+            'totalCash',
+            'totalUpi',
             'totalAmount',
+            'netPayable',
             'alreadySubmitted',
             'previousSettlements'
         ));
@@ -52,39 +60,37 @@ class MobileSettlementController extends Controller
 
     public function store(Request $request)
     {
+
         $request->validate([
-            'from_date' => 'required|date',
-            'to_date' => 'required|date|after_or_equal:from_date',
+            'settlement_date' => 'required|date',
         ]);
+
+        $date = $request->settlement_date;
 
         $userId = auth()->id();
 
         if (Settlement::where('deliveryboy_id', $userId)
-            ->where('from_date', $request->from_date)
-            ->where('to_date', $request->to_date)
+            ->where('settlement_date', $request->settlement_date)
+            ->where('status', 'submitted')
             ->exists()) {
 
             return back()->with('error',
                 'Settlement already submitted for this date range.');
         }
 
-        $amount = Payment::where('deliveryboy_id', $userId)
-            ->whereBetween('created_at', [
-                $request->from_date.' 00:00:00',
-                $request->to_date.' 23:59:59'
-            ])
-            ->sum('amount');
-
-        if ($amount <= 0) {
-            return back()->with('error',
-                'No verified payments for this date range.');
-        }
+        $payments = Payment::where('deliveryboy_id', $userId)
+            ->whereDate('created_at', $date)
+            ->get();
+        $totalCash = $payments->where('payment_method', 'cash')->sum('amount');
+        $totalUpi = $payments->where('payment_method', 'upi')->sum('amount');
 
         $settlement = Settlement::create([
             'deliveryboy_id' => $userId,
-            'from_date' => $request->from_date,
-            'to_date' => $request->to_date,
-            'total_amount' => $amount,
+            'settlement_date' => $request->settlement_date,
+            'total_cash' => $totalCash,
+            'total_upi' => $totalUpi,
+            'total_amount' => $totalCash + $totalUpi,
+            'status' => 'submitted'
         ]);
 
         // Notify admin

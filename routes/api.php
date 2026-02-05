@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CustomerSyncController;
 use App\Http\Controllers\Api\DeliveryBoyController;
 use App\Http\Controllers\Api\DeliveryBoyPerformanceController;
 use App\Http\Controllers\Api\DeliveryUploadController;
+use App\Http\Controllers\Api\GeocodeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,10 @@ Route::middleware(['auth:sanctum','role:admin'])
             [CustomerSyncController::class, 'sync']
         );
 
+        Route::post('/customers/sync/map-location',
+            [CustomerSyncController::class, 'syncMapLocation']
+        );
+
         /*
         |--------------------------------------------------
         | DELIVERIES (UPLOAD + VIEW)
@@ -76,16 +81,17 @@ Route::middleware(['auth:sanctum','role:admin'])
             [AdminDeliveryController::class, 'index']
         );
 
+        Route::get('/deliveries/{id}', [AdminDeliveryController::class, 'get']);
         /*
         |--------------------------------------------------
         | DELIVERY REQUEST APPROVALS
         |--------------------------------------------------
         */
-        Route::post('/deliveries/{delivery}/approve-request',
+        Route::post('/deliveries/{delivery}/approve',
             [AdminDeliveryController::class, 'approveRequest']
         );
 
-        Route::post('/deliveries/{delivery}/reject-request',
+        Route::post('/deliveries/{delivery}/reject',
             [AdminDeliveryController::class, 'rejectRequest']
         );
 
@@ -97,6 +103,8 @@ Route::middleware(['auth:sanctum','role:admin'])
         Route::get('/settlements',
             [AdminSettlementController::class, 'index']
         );
+
+        Route::get('/settlements/{id}', [AdminSettlementController::class, 'get']);
 
         Route::post('/settlements/{settlement}/approve',
             [AdminSettlementController::class, 'approve']
@@ -134,6 +142,12 @@ Route::middleware(['auth:sanctum','role:admin'])
             [AdminNotificationController::class, 'markAsRead']
         );
 
+        Route::post('/notifications/read-all',
+            [AdminNotificationController::class, 'readAll']
+        );
+
+        Route::post('/geocode/test',
+            [GeocodeController::class, 'geocode']);
     });
 
 /*

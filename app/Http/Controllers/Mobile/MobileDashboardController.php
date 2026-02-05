@@ -17,26 +17,31 @@ class MobileDashboardController extends Controller
         /* Delivery counts */
         $pendingCount = Delivery::where('deliveryboy_id', $userId)
             ->whereIn('status', ['pending', 'assigned'])
+            ->whereDate('delivery_date', today()->toDateString())
             ->count();
 
         $completedCount = Delivery::where('deliveryboy_id', $userId)
             ->where('status', 'delivered')
+            ->whereDate('delivery_date', today()->toDateString())
             ->count();
 
         /* Payment totals */
         $totalPrepaid = Payment::where('deliveryboy_id', $userId)
             ->where('payment_type', 'prepaid')
             ->where('status', 'verified')
+            ->whereDate('created_at', today()->toDateString())
             ->sum('amount');
 
         $totalCash = Payment::where('deliveryboy_id', $userId)
             ->where('payment_method', 'cash')
             ->where('status', 'verified')
+            ->whereDate('created_at', today()->toDateString())
             ->sum('amount');
 
         $totalUpi = Payment::where('deliveryboy_id', $userId)
             ->where('payment_method', 'upi')
             ->where('status', 'verified')
+            ->whereDate('created_at', today()->toDateString())
             ->sum('amount');
 
         // ✅ NET TOTAL = CASH + UPI

@@ -18,7 +18,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#cancelled">
-                        Cancelled ({{ $cancelled->count() }})
+                        Others ({{ $cancelled->count() }})
                     </a>
                 </li>
             </ul>
@@ -65,105 +65,57 @@
 
 
 
-    <!-- LONG PRESS ACTION SHEET -->
-    <div class="offcanvas offcanvas-bottom"
-         tabindex="-1"
-         id="deliveryActionSheet">
-        <div class="offcanvas-header">
-            <h6 class="fw-bold mb-0">Delivery Actions</h6>
-            <button class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
+{{--    <!-- LONG PRESS ACTION SHEET -->--}}
+{{--    <div class="offcanvas offcanvas-bottom"--}}
+{{--         tabindex="-1"--}}
+{{--         id="deliveryActionSheet">--}}
+{{--        <div class="offcanvas-header">--}}
+{{--            <h6 class="fw-bold mb-0">Delivery Actions</h6>--}}
+{{--            <button class="btn-close" data-bs-dismiss="offcanvas"></button>--}}
+{{--        </div>--}}
 
-        <div class="offcanvas-body">
-            <a id="actionCall" class="btn btn-outline-primary w-100 mb-2">
-                📞 Call Customer
-            </a>
+{{--        <div class="offcanvas-body">--}}
+{{--            <a id="actionCall" class="btn btn-outline-primary w-100 mb-2">--}}
+{{--                📞 Call Customer--}}
+{{--            </a>--}}
 
-            <a id="actionNavigate" class="btn btn-outline-success w-100 mb-2">
-                📍 Navigate
-            </a>
+{{--            <a id="actionNavigate" class="btn btn-outline-success w-100 mb-2">--}}
+{{--                📍 Navigate--}}
+{{--            </a>--}}
 
-            <a id="actionOpen" class="btn btn-primary w-100">
-                📦 Open Delivery
-            </a>
-        </div>
-    </div>
-    <script>
-        let pressTimer;
+{{--            <a id="actionOpen" class="btn btn-primary w-100">--}}
+{{--                📦 Open Delivery--}}
+{{--            </a>--}}
+{{--        </div>--}}
+{{--    </div>--}}
+{{--    <script>--}}
+{{--        let pressTimer;--}}
 
-        function startPress(e, openUrl, phone, mapLocation) {
-            pressTimer = setTimeout(() => {
+{{--        function startPress(e, openUrl, phone, mapLocation) {--}}
+{{--            pressTimer = setTimeout(() => {--}}
 
-                // Set actions
-                document.getElementById('actionOpen').href = openUrl;
-                document.getElementById('actionCall').href = 'tel:' + phone;
+{{--                // Set actions--}}
+{{--                document.getElementById('actionOpen').href = openUrl;--}}
+{{--                document.getElementById('actionCall').href = 'tel:' + phone;--}}
 
-                if (mapLocation) {
-                    document.getElementById('actionNavigate').href ="{{ $delivery['navigation_url'] }}";
-                    document.getElementById('actionNavigate').classList.remove('disabled');
-                } else {
-                    document.getElementById('actionNavigate').href = '#';
-                    document.getElementById('actionNavigate').classList.add('disabled');
-                }
+{{--                if (mapLocation) {--}}
+{{--                    document.getElementById('actionNavigate').href ="{{ $delivery['navigation_url'] }}";--}}
+{{--                    document.getElementById('actionNavigate').classList.remove('disabled');--}}
+{{--                } else {--}}
+{{--                    document.getElementById('actionNavigate').href = '#';--}}
+{{--                    document.getElementById('actionNavigate').classList.add('disabled');--}}
+{{--                }--}}
 
-                // Show bottom sheet
-                new bootstrap.Offcanvas(
-                    document.getElementById('deliveryActionSheet')
-                ).show();
+{{--                // Show bottom sheet--}}
+{{--                new bootstrap.Offcanvas(--}}
+{{--                    document.getElementById('deliveryActionSheet')--}}
+{{--                ).show();--}}
 
-            }, 800); // 500ms = long press
-        }
+{{--            }, 800); // 500ms = long press--}}
+{{--        }--}}
 
-        function cancelPress() {
-            clearTimeout(pressTimer);
-        }
-    </script>
-    <script>
-        document.querySelectorAll('.swipe-container').forEach(container => {
-            const card = container.querySelector('.swipe-card');
-            let startX = 0;
-            let currentX = 0;
-            let isSwiping = false;
-
-            card.addEventListener('touchstart', e => {
-                startX = e.touches[0].clientX;
-                isSwiping = true;
-            });
-
-            card.addEventListener('touchmove', e => {
-                if (!isSwiping) return;
-
-                currentX = e.touches[0].clientX - startX;
-
-                // limit swipe distance
-                if (Math.abs(currentX) > 100) return;
-
-                card.style.transform = `translateX(${currentX}px)`;
-            });
-
-            card.addEventListener('touchend', () => {
-                isSwiping = false;
-
-                // 👉 Swipe Right → Call
-                if (currentX > 60) {
-                    window.location.href = container.dataset.call;
-                }
-
-                // 👉 Swipe Left → Navigate
-                else if (currentX < -60) {
-                    if (container.dataset.map) {
-                        window.open({{ $delivery['navigation_url'] }},
-                            '_blank'
-                        );
-                    }
-
-                }
-
-                // reset
-                card.style.transform = 'translateX(0)';
-                currentX = 0;
-            });
-        });
-    </script>
-
+{{--        function cancelPress() {--}}
+{{--            clearTimeout(pressTimer);--}}
+{{--        }--}}
+{{--    </script>--}}
 @endsection

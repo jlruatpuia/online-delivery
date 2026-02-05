@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -42,17 +44,51 @@ class DashboardController extends Controller
                 $q->where('status', 'delivered')
             ], 'amount')
             ->get();
+        /* Delivery Status Summary */
+        $deliveryStatus = Delivery::select(
+            'status',
+            DB::raw('count(*) as total')
+        )
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
+        // 🔹 Delivery boy performance
+        $deliveryBoyPerformance = Delivery::select(
+            'deliveryboy_id',
+            DB::raw('count(*) as total'),
+            DB::raw("sum(case when status='delivered' then 1 else 0 end) as delivered")
+        )
+            ->with('deliveryBoy:id,name')
+            ->groupBy('deliveryboy_id')
+            ->get()
+            ->map(function ($row) {
+                $successRate = $row->total > 0
+                    ? round(($row->delivered / $row->total) * 100, 2)
+                    : 0;
+
+                return [
+                    'name' => $row->deliveryBoy->name ?? 'N/A',
+                    'total' => $row->total,
+                    'delivered' => $row->delivered,
+                    'success_rate' => $successRate,
+                ];
+            });
         /* Latest deliveries (read-only list) */
-        $deliveries = Delivery::with('deliveryBoy')
-            ->latest()
-            ->limit(50)
-            ->get();
+        // 🔹 Payment type summary (Cash vs UPI)
+        $paymentSummary = Payment::select(
+            'payment_method',
+            DB::raw('sum(amount) as total')
+        )
+            ->whereNotNull('payment_method')
+            ->groupBy('payment_method')
+            ->pluck('total', 'payment_method');
 
         return view('admin.dashboard', compact(
             'stats',
             'deliveryBoys',
-            'deliveries'
+            'deliveryStatus',
+            'deliveryBoyPerformance',
+            'paymentSummary'
         ));
     }
 }

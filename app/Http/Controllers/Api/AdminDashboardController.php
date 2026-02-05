@@ -40,29 +40,40 @@ class AdminDashboardController extends Controller
     private function kpi($from, $to)
     {
         return [
-            'total_deliveries' => Delivery::count(),
+            'total_deliveries' => Delivery::whereBetween('delivery_date', [$from, $to])
+                ->count(),
 
             'pending_deliveries' => Delivery::whereIn(
                 'status', ['pending','assigned']
-            )->count(),
+            )
+                ->whereBetween('delivery_date', [$from, $to])
+                ->count(),
 
             'delivered_deliveries' => Delivery::where(
                 'status','delivered'
-            )->count(),
+            )
+                ->whereBetween('delivery_date', [$from, $to])
+                ->count(),
 
-            'total_collection' => Payment::sum('amount'),
+            'total_collection' => Payment::whereBetween('created_at', [$from, $to])
+                ->sum('amount'),
 
             'cash_collection' => Payment::where(
                 'payment_method','cash'
-            )->sum('amount'),
+            )
+                ->whereBetween('created_at', [$from, $to])
+                ->sum('amount'),
 
             'upi_collection' => Payment::where(
                 'payment_method','upi'
-            )->sum('amount'),
+            )
+                ->whereBetween('created_at', [$from, $to])
+                ->sum('amount'),
 
             'pending_settlements' => Settlement::where(
                 'status','submitted'
-            )->count(),
+            )->whereBetween('settlement_date', [$from, $to])
+                ->count(),
 
             'active_delivery_boys' => User::where(
                 'role','delivery_boy'
@@ -76,12 +87,12 @@ class AdminDashboardController extends Controller
     private function dailyChart($from, $to)
     {
         return Delivery::selectRaw("
-                DATE(created_at) as date,
+                DATE(delivery_date) as date,
                 COUNT(*) as deliveries,
                 SUM(amount) as total_amount
             ")
-            ->whereBetween('created_at', [$from, $to])
-            ->groupBy(DB::raw('DATE(created_at)'))
+            ->whereBetween('delivery_date', [$from, $to])
+            ->groupBy(DB::raw('DATE(delivery_date)'))
             ->orderBy('date')
             ->get();
     }
@@ -92,12 +103,12 @@ class AdminDashboardController extends Controller
     private function monthlyChart()
     {
         return Delivery::selectRaw("
-                DATE_FORMAT(created_at,'%Y-%m') as month,
+                DATE_FORMAT(delivery_date,'%Y-%m') as month,
                 COUNT(*) as deliveries,
                 SUM(amount) as total_amount
             ")
-            ->where('created_at', '>=', now()->subMonths(11))
-            ->groupBy(DB::raw("DATE_FORMAT(created_at,'%Y-%m')"))
+            ->where('delivery_date', '>=', now()->subMonths(11))
+            ->groupBy(DB::raw("DATE_FORMAT(delivery_date,'%Y-%m')"))
             ->orderBy('month')
             ->get();
     }
@@ -111,7 +122,7 @@ class AdminDashboardController extends Controller
                 status,
                 COUNT(*) as total
             ")
-            ->whereBetween('created_at', [$from, $to])
+            ->whereBetween('delivery_date', [$from, $to])
             ->groupBy('status')
             ->get();
     }

@@ -12,46 +12,16 @@
         $statusConfig[$delivery['status']]
         ?? ['dark', ucfirst($delivery['status'])];
 
-    $isUrgent =
-        in_array($delivery['status'], ['pending','assigned']) &&
-        $delivery['created_at']->diffInHours(now()) >= 2;
-
     $hasMap = !empty($delivery['has_map_location']);
     $customer = $delivery['customer'] ?? null;
 @endphp
 
-<div class="swipe-container mb-3"
+<div class="card mb-3"
      data-call="tel:{{ $delivery['customer']['phone'] ?? '' }}"
      data-navigation="{{ $delivery['navigation_url'] ?? '' }}">
 
-
-    <!-- LEFT ACTION -->
-    <div class="swipe-action swipe-left">
-        📞 Call
-    </div>
-
-    <!-- RIGHT ACTION -->
-    <div class="swipe-action swipe-right">
-        📍 Navigate
-    </div>
-
     <!-- CARD (NOT CLICKABLE) -->
-    <div class="card swipe-card shadow-sm
-                {{ $isUrgent ? 'border-danger' : '' }}"
-         oncontextmenu="return false"
-         ontouchstart="startPress(event,
-            '{{ route('mobile.delivery.show', $delivery['id']) }}',
-            '{{ $delivery['customer']['phone'] }}',
-            '{{ $delivery['navigation_url'] }}'
-         )"
-         ontouchend="cancelPress()"
-         onmousedown="startPress(event,
-            '{{ route('mobile.delivery.show', $delivery['id']) }}',
-            '{{ $delivery['customer']['phone'] }}',
-            '{{ $delivery['navigation_url'] }}'
-         )"
-         onmouseup="cancelPress()"
-    >
+    <div class="card swipe-card shadow-sm">
         <div class="card-header d-flex justify-content-between align-items-start">
             <div>
                 <strong>#{{ $delivery['invoice_no'] }}</strong>
@@ -72,11 +42,6 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-8">
-                    {{-- URGENT --}}
-                    @if($isUrgent)
-                        <span class="badge bg-danger mb-2">🔔 Urgent</span>
-                    @endif
-
                     {{-- AMOUNT --}}
                     <div class="fw-semibold text-success">
                         ₹ {{ number_format($delivery['amount'], 2) }}
@@ -92,10 +57,12 @@
                         {{ $delivery['customer']['address'] }}
                     </div>
                     {{-- DATE / TIME --}}
+                    @if($delivery['status'] == 'delivered')
                     <div class="small text-muted mb-1">
                         <i class="bi bi-clock"></i>
-                        {{ $delivery['created_at']->format('d M Y, h:i A') }}
+                        {{ $delivery['delivered_at']->format('d M Y, h:i A') }}
                     </div>
+                    @endif
                 </div>
                 <div class="col-4">
                     {{-- MINI MAP --}}
@@ -111,19 +78,32 @@
                     @endif
                 </div>
             </div>
-
-
-
         </div>
         <div class="card-footer">
             {{-- DETAILS BUTTON --}}
+            <div class="btn-group w-100" role="group" aria-label="Basic example">
+                <a class="btn btn-outline-secondary" href="tel:{{ $delivery['customer']['phone'] }}">
+                    📞
+                </a>
+                @if($hasMap)
+                <a href="{{ $delivery['navigation_url'] }}" class="btn btn-outline-info"
+                   target="_blank">
+                    📍
+                </a>
+                @else
+                    <span class="btn btn-outline-success disabled">📍</span>
+                @endif
 
-            <a href="{{ route('mobile.delivery.show', $delivery['id']) }}"
-               class="btn btn-primary-subtle w-100"
-               >
-                {{--                    📦 View Details--}}
-                <i class="bi bi-eye fs-3"></i>
-            </a>
+                <a class="btn btn-outline-primary" href="{{ route('mobile.delivery.show', $delivery['id']) }}">
+                    📦
+                </a>
+            </div>
+{{--            <a href="{{ route('mobile.delivery.show', $delivery['id']) }}"--}}
+{{--               class="btn btn-primary-subtle w-100"--}}
+{{--               >--}}
+{{--                --}}{{--                    📦 View Details--}}
+{{--                <i class="bi bi-eye fs-3"></i>--}}
+{{--            </a>--}}
         </div>
     </div>
 </div>
